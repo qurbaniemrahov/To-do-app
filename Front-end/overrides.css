@@ -1,0 +1,8 @@
+/* Small visual correction for the circular progress label. */
+.progress-ring {
+  background: radial-gradient(circle, #fff 0 59%, transparent 61%),
+    conic-gradient(var(--violet) var(--progress, 0%), #edf0f7 0);
+  position: static;
+}
+
+.progress-ring::after { display: none; }

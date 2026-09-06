@@ -9,4 +9,5 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth:sanctum');
 
-Route::apiResource('todos', TodoController::class);
+Route::apiResource('todos', TodoController::class)
+    ->middleware('auth:sanctum');

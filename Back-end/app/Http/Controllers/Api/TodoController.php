@@ -9,28 +9,42 @@ use Illuminate\Http\Request;
 
 class TodoController extends Controller
 {
-    public function index()
-    {
-        return Todo::latest()->get();
+ public function index(Request $request)
+{
+    return $request->user()->todos()->latest()->get();
+}
+
+public function show(Request $request, Todo $todo)
+{
+    if ($todo->user_id !== $request->user()->id) {
+        return response()->json([
+            'message' => 'Bu task sizə aid deyil.',
+        ], 403);
     }
 
-    public function show(Todo $todo)
-{
     return $todo;
 }
 
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'completed' => ['sometimes', 'boolean'],
-        ]);
+public function store(Request $request)
+{
+    $data = $request->validate([
+        'title' => ['required', 'string', 'max:255'],
+        'completed' => ['sometimes', 'boolean'],
+    ]);
 
-        return response()->json(Todo::create($data), 201);
-    }
+    $todo = $request->user()->todos()->create($data);
+
+    return response()->json($todo, 201);
+}
 
     public function update(Request $request, Todo $todo)
     {
+
+        if ($todo->user_id !== $request->user()->id) {
+        return response()->json([
+            'message' => 'Bu task sizə aid deyil.',
+        ], 403);
+    }
         $data = $request->validate([
             'title' => ['sometimes', 'required', 'string', 'max:255'],
             'completed' => ['sometimes', 'boolean'],
@@ -41,10 +55,16 @@ class TodoController extends Controller
         return $todo;
     }
 
-    public function destroy(Todo $todo)
-    {
-        $todo->delete();
-
-        return response()->noContent();
+  public function destroy(Request $request, Todo $todo)
+{
+    if ($todo->user_id !== $request->user()->id) {
+        return response()->json([
+            'message' => 'Bu task sizə aid deyil.',
+        ], 403);
     }
+
+    $todo->delete();
+
+    return response()->noContent();
+}
 }

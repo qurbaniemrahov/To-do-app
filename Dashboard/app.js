@@ -1,20 +1,26 @@
-const tasks = [
-  { title: 'Mobil tətbiq dizaynını tamamla', user: 'Aysel Məmmədova', initials: 'AM', status: 'Tamamlandı', date: '2 sentyabr' },
-  { title: 'API sənədlərini yenilə', user: 'Elvin Əliyev', initials: 'EƏ', status: 'Aktiv', date: '2 sentyabr' },
-  { title: 'Həftəlik hesabatı hazırla', user: 'Nigar Həsənli', initials: 'NH', status: 'Tamamlandı', date: '1 sentyabr' },
-  { title: 'Yeni onboarding mətnləri', user: 'Murad İsmayılov', initials: 'Mİ', status: 'Aktiv', date: '1 sentyabr' },
-];
-const users = [
-  { name: 'Aysel Məmmədova', email: 'aysel@example.com', tasks: 6 },
-  { name: 'Elvin Əliyev', email: 'elvin@example.com', tasks: 4 },
-  { name: 'Nigar Həsənli', email: 'nigar@example.com', tasks: 5 },
-  { name: 'Murad İsmayılov', email: 'murad@example.com', tasks: 3 },
-];
+const API_URL = 'http://127.0.0.1:8000/api';
+const sessionKey = 'flowlist-session-v1';
+const session = JSON.parse(localStorage.getItem(sessionKey) || 'null');
 const $ = (selector) => document.querySelector(selector);
 const dashboard = $('.dashboard');
 const overview = dashboard.innerHTML;
-const labels = { overview: 'Ümumi baxış', tasks: 'Tasklar', users: 'İstifadəçilər', reports: 'Hesabatlar' };
+const labels = {
+  overview: 'Ümumi baxış',
+  tasks: 'Tasklar',
+  users: 'İstifadəçilər',
+  reports: 'Hesabatlar',
+};
+let dashboardData = null;
 
+function formatDate(date) {
+  return new Intl.DateTimeFormat('az-AZ', {
+    day: 'numeric',
+    month: 'short',
+  }).format(new Date(date));
+}
+function initials(name) {
+  return name.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase();
+}
 function toast(message) {
   const el = $('#toast');
   el.textContent = message;
@@ -24,42 +30,57 @@ function toast(message) {
 }
 function taskTable(items) {
   return '<div class="table-wrap"><table><thead><tr><th>Task</th><th>İstifadəçi</th><th>Status</th><th>Tarix</th></tr></thead><tbody>' +
-    items.map((task) => '<tr><td><div class="task-name"><i></i><span>' + task.title + '</span></div></td><td><div class="user-cell"><b>' + task.initials + '</b><span>' + task.user + '</span></div></td><td><mark class="' + (task.status === 'Aktiv' ? 'status-active' : '') + '">' + task.status + '</mark></td><td class="muted">' + task.date + '</td></tr>').join('') +
+    items.map((task) => {
+      const user = task.user || { name: 'Silinmiş istifadəçi' };
+      const status = task.completed ? 'Tamamlandı' : 'Aktiv';
+      return '<tr><td><div class="task-name"><i></i><span>' + task.title + '</span></div></td><td><div class="user-cell"><b>' + initials(user.name) + '</b><span>' + user.name + '</span></div></td><td><mark class="' + (!task.completed ? 'status-active' : '') + '">' + status + '</mark></td><td class="muted">' + formatDate(task.created_at) + '</td></tr>';
+    }).join('') +
     '</tbody></table></div>';
 }
-function renderOverview() {
-  dashboard.innerHTML = overview;
-  renderRows();
-  $('#view-all').addEventListener('click', () => navigate('tasks'));
-  $('#add-user').addEventListener('click', () => navigate('users'));
-}
-function renderTasksPage() {
-  dashboard.innerHTML = '<section class="welcome"><div><p class="eyebrow">TASK İDARƏETMƏSİ</p><h2>Bütün tasklar</h2><p>Platformadakı taskların siyahısı.</p></div></section><section class="panel table-panel"><div class="panel-head"><div><h3>Tasklar</h3><p>' + tasks.length + ' task göstərilir</p></div></div>' + taskTable(tasks) + '</section>';
-}
-function renderUsersPage() {
-  dashboard.innerHTML = '<section class="welcome"><div><p class="eyebrow">İSTİFADƏÇİLƏR</p><h2>İstifadəçi siyahısı</h2><p>Qeydiyyatdan keçmiş istifadəçilər.</p></div><button id="new-user">+ İstifadəçi əlavə et</button></section><section class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>İstifadəçi</th><th>E-poçt</th><th>Task sayı</th></tr></thead><tbody>' +
-    users.map((user) => '<tr><td><div class="user-cell"><b>' + user.name.split(' ').map((part) => part[0]).join('') + '</b><span>' + user.name + '</span></div></td><td class="muted">' + user.email + '</td><td>' + user.tasks + '</td></tr>').join('') +
-    '</tbody></table></div></section>';
-  $('#new-user').addEventListener('click', () => toast('İstifadəçi əlavəetmə formu backend qoşulduqda açılacaq.'));
-}
-function renderReportsPage() {
-  const completed = tasks.filter((task) => task.status === 'Tamamlandı').length;
-  dashboard.innerHTML = '<section class="welcome"><div><p class="eyebrow">HESABATLAR</p><h2>Task hesabatı</h2><p>Hazırkı demo məlumatlarının xülasəsi.</p></div></section><section class="stats"><article class="stat-card"><div class="stat-icon purple">▣</div><div><p>Ümumi task</p><strong>' + tasks.length + '</strong></div></article><article class="stat-card"><div class="stat-icon green">✓</div><div><p>Tamamlanan</p><strong>' + completed + '</strong></div></article><article class="stat-card"><div class="stat-icon orange">○</div><div><p>Aktiv</p><strong>' + (tasks.length - completed) + '</strong></div></article><article class="stat-card"><div class="stat-icon blue">♙</div><div><p>İstifadəçi</p><strong>' + users.length + '</strong></div></article></section><section class="panel"><div class="panel-head"><div><h3>Qeyd</h3><p>Backend admin API-si qoşulduqdan sonra bu rəqəmlər database-dən avtomatik gələcək.</p></div></div></section>';
+function renderStats() {
+  if (!dashboardData) return;
+  $('#total-users').textContent = dashboardData.total_users;
+  $('#total-tasks').textContent = dashboardData.total_tasks;
+  $('#completed-tasks').textContent = dashboardData.completed_tasks;
+  $('#active-tasks').textContent = dashboardData.active_tasks;
+  document.querySelector('.donut strong').textContent = dashboardData.total_tasks;
+  document.querySelectorAll('.legend p')[0].querySelector('span').textContent = dashboardData.completed_tasks;
+  document.querySelectorAll('.legend p')[1].querySelector('span').textContent = dashboardData.active_tasks;
 }
 function renderRows() {
   const body = $('#task-rows');
   body.innerHTML = '';
-  tasks.forEach((task) => {
+  (dashboardData?.recent_tasks || []).forEach((task) => {
     const row = $('#row-template').content.firstElementChild.cloneNode(true);
+    const user = task.user || { name: 'Silinmiş istifadəçi' };
     row.querySelector('.task-name span').textContent = task.title;
-    row.querySelector('.user-cell b').textContent = task.initials;
-    row.querySelector('.user-cell span').textContent = task.user;
+    row.querySelector('.user-cell b').textContent = initials(user.name);
+    row.querySelector('.user-cell span').textContent = user.name;
     const status = row.querySelector('mark');
-    status.textContent = task.status;
-    status.classList.toggle('status-active', task.status === 'Aktiv');
-    row.querySelector('.muted').textContent = task.date;
+    status.textContent = task.completed ? 'Tamamlandı' : 'Aktiv';
+    status.classList.toggle('status-active', !task.completed);
+    row.querySelector('.muted').textContent = formatDate(task.created_at);
     body.appendChild(row);
   });
+}
+function renderOverview() {
+  dashboard.innerHTML = overview;
+  renderStats();
+  renderRows();
+  $('#view-all').addEventListener('click', () => navigate('tasks'));
+  $('#add-user').addEventListener('click', () => toast('İstifadəçi yaratmaq qeydiyyat səhifəsindən edilir.'));
+}
+function renderTasksPage() {
+  const tasks = dashboardData?.recent_tasks || [];
+  dashboard.innerHTML = '<section class="welcome"><div><p class="eyebrow">TASK İDARƏETMƏSİ</p><h2>Son tasklar</h2><p>Son əlavə olunan taskların siyahısı.</p></div></section><section class="panel table-panel"><div class="panel-head"><div><h3>Tasklar</h3><p>' + tasks.length + ' task göstərilir</p></div></div>' + taskTable(tasks) + '</section>';
+}
+function renderUsersPage() {
+  const total = dashboardData?.total_users || 0;
+  dashboard.innerHTML = '<section class="welcome"><div><p class="eyebrow">İSTİFADƏÇİLƏR</p><h2>İstifadəçi statistikası</h2><p>Platformada ümumilikdə ' + total + ' qeydiyyatdan keçmiş istifadəçi var.</p></div></section><section class="panel"><div class="panel-head"><div><h3>Qeyd</h3><p>İstifadəçilərin tam siyahısı üçün ayrıca admin endpoint-i növbəti mərhələdə əlavə olunacaq.</p></div></div></section>';
+}
+function renderReportsPage() {
+  const data = dashboardData || { total_tasks: 0, completed_tasks: 0, active_tasks: 0, total_users: 0 };
+  dashboard.innerHTML = '<section class="welcome"><div><p class="eyebrow">HESABATLAR</p><h2>Task hesabatı</h2><p>Database-dən gələn cari xülasə.</p></div></section><section class="stats"><article class="stat-card"><div class="stat-icon purple">▣</div><div><p>Ümumi task</p><strong>' + data.total_tasks + '</strong></div></article><article class="stat-card"><div class="stat-icon green">✓</div><div><p>Tamamlanan</p><strong>' + data.completed_tasks + '</strong></div></article><article class="stat-card"><div class="stat-icon orange">○</div><div><p>Aktiv</p><strong>' + data.active_tasks + '</strong></div></article><article class="stat-card"><div class="stat-icon blue">♙</div><div><p>İstifadəçi</p><strong>' + data.total_users + '</strong></div></article></section>';
 }
 function navigate(page) {
   const target = labels[page] ? page : 'overview';
@@ -72,9 +93,31 @@ function navigate(page) {
   if (target === 'users') renderUsersPage();
   if (target === 'reports') renderReportsPage();
 }
+async function loadDashboard() {
+  if (!session?.token) {
+    window.location.href = '/';
+    return;
+  }
+  const response = await fetch(API_URL + '/admin/dashboard', {
+    headers: {
+      Accept: 'application/json',
+      Authorization: 'Bearer ' + session.token,
+    },
+  });
+  if (response.status === 401 || response.status === 403) {
+    localStorage.removeItem(sessionKey);
+    window.location.href = '/';
+    return;
+  }
+  if (!response.ok) throw new Error('Dashboard məlumatları yüklənmədi.');
+  dashboardData = await response.json();
+  navigate(location.hash.slice(1) || 'overview');
+}
+
 document.querySelectorAll('.nav-link').forEach((button) => button.addEventListener('click', () => navigate(button.dataset.page)));
 $('.brand').addEventListener('click', (event) => { event.preventDefault(); navigate('overview'); });
 $('#menu').addEventListener('click', () => $('.sidebar').classList.toggle('open'));
 $('#export-button').addEventListener('click', () => toast('Hesabat ixrac üçün hazırlandı.'));
 window.addEventListener('hashchange', () => navigate(location.hash.slice(1)));
 navigate(location.hash.slice(1) || 'overview');
+loadDashboard().catch((error) => toast(error.message));

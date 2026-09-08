@@ -24,9 +24,13 @@ Flowlist istifadəçilərin gündəlik task-larını idarə etməsi üçün haz�
 
 ~~~text
 Todo App/
-├── Front-end/    # İstifadəçi interfeysi
-├── Dashboard/    # Admin panel interfeysi
-├── Back-end/     # Laravel API
+├── Back-end/
+│   ├── public/                # CSS və JavaScript assetləri
+│   │   └── dashboard/         # Admin panel assetləri
+│   ├── resources/views/       # İstifadəçi və admin Blade səhifələri
+│   └── routes/                # Web və API route-ları
+├── deploy/                    # Production konfiqurasiya nümunələri
+├── PRODUCTION.md
 └── Readme.md
 ~~~
 
@@ -61,15 +65,16 @@ API standart olaraq bu ünvanda açılır:
 http://127.0.0.1:8000
 ~~~
 
-### 2. Front-end
+### 2. Tətbiqi açmaq
 
-Front-end/index.html faylını VS Code Live Server ilə açın.
-
-Front-end API-yə bu ünvanla qoşulur:
+Frontend və dashboard Laravel tərəfindən təqdim olunur. Əlavə Live Server lazım deyil:
 
 ~~~text
-http://127.0.0.1:8000/api
+http://127.0.0.1:8000
+http://127.0.0.1:8000/dashboard
 ~~~
+
+Frontend API-yə eyni domen daxilində `/api` yolu ilə qoşulur.
 
 ## API endpoint-ləri
 

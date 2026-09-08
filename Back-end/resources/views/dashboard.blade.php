@@ -1,7 +1,47 @@
-@php
-    $html = file_get_contents(dirname(base_path()).'/Dashboard/index.html');
-    $html = str_replace('href="style.css"', 'href="/dashboard/style.css"', $html);
-    $html = str_replace('src="app.js"', 'src="/dashboard/app.js"', $html);
-@endphp
-
-{!! $html !!}
+<!doctype html>
+<html lang="az">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flowlist — İdarəetmə paneli</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ asset('dashboard/style.css') }}" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar" id="sidebar">
+        <a class="brand" href="#"><span>✓</span> Flowlist</a>
+        <p class="workspace">WORKSPACE</p>
+        <nav>
+          <button class="nav-link active" data-page="overview"><i>▦</i> Ümumi baxış</button>
+          <button class="nav-link" data-page="tasks"><i>☑</i> Tasklar <b id="sidebar-total-tasks">0</b></button>
+          <button class="nav-link" data-page="users"><i>♙</i> İstifadəçilər <b id="sidebar-total-users">0</b></button>
+          <button class="nav-link" data-page="reports"><i>◫</i> Hesabatlar</button>
+        </nav>
+        <div class="sidebar-footer"><div class="help"><span>?</span><div><strong>Kömək lazımdır?</strong><small>Dəstək mərkəzinə keç</small></div></div><div class="admin"><div class="avatar">A</div><div><strong>Admin Panel</strong><small>admin@flowlist.az</small></div><button>⌄</button></div></div>
+      </aside>
+      <main>
+        <header class="topbar"><button class="menu" id="menu" aria-label="Menyu">☰</button><div><p>2 sentyabr, 2026</p><h1 id="page-title">Ümumi baxış</h1></div><div class="top-actions"><button class="icon-button" aria-label="Bildirişlər">♧<span></span></button><button class="export" id="export-button">⇩ Hesabatı ixrac et</button></div></header>
+        <div class="dashboard">
+          <section class="welcome"><div><p class="eyebrow">GÜNLÜK XÜLASƏ</p><h2>Salam, Admin <span>👋</span></h2><p>Platformadakı son aktivlik budur.</p></div><button id="add-user">+ İstifadəçi əlavə et</button></section>
+          <section class="stats">
+            <article class="stat-card"><div class="stat-icon purple">☑</div><div><p>Ümumi tasklar</p><strong id="total-tasks">248</strong><small class="up">↑ 12.5% <em>keçən aydan</em></small></div></article>
+            <article class="stat-card"><div class="stat-icon green">✓</div><div><p>Tamamlanan</p><strong id="completed-tasks">186</strong><small class="up">↑ 8.2% <em>keçən aydan</em></small></div></article>
+            <article class="stat-card"><div class="stat-icon orange">◷</div><div><p>Aktiv tasklar</p><strong id="active-tasks">62</strong><small class="down">↓ 3.1% <em>keçən aydan</em></small></div></article>
+            <article class="stat-card"><div class="stat-icon blue">♙</div><div><p>Aktiv istifadəçi</p><strong id="total-users">0</strong><small class="up">↑ 6.8% <em>keçən aydan</em></small></div></article>
+          </section>
+          <section class="grid">
+            <article class="panel chart-panel"><div class="panel-head"><div><h3>Task aktivliyi</h3><p>Son 7 gündə tamamlanan tasklar</p></div><select aria-label="Period"><option>Son 7 gün</option><option>Son 30 gün</option></select></div><div class="chart"><div class="y-axis"><span>50</span><span>40</span><span>30</span><span>20</span><span>10</span><span>0</span></div><svg viewBox="0 0 620 230" preserveAspectRatio="none" aria-label="Task aktivliyi qrafiki"><defs><linearGradient id="fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#7166ed" stop-opacity=".26"/><stop offset="1" stop-color="#7166ed" stop-opacity="0"/></linearGradient></defs><path class="area" d="M0 187 L100 157 L205 166 L310 91 L415 120 L515 46 L620 74 L620 230 L0 230 Z"/><path class="line" d="M0 187 L100 157 L205 166 L310 91 L415 120 L515 46 L620 74"/><g class="dots"><circle cx="0" cy="187" r="4"/><circle cx="100" cy="157" r="4"/><circle cx="205" cy="166" r="4"/><circle cx="310" cy="91" r="4"/><circle cx="415" cy="120" r="4"/><circle cx="515" cy="46" r="4"/><circle cx="620" cy="74" r="4"/></g></svg><div class="x-axis"><span>B.e.</span><span>Ç.a.</span><span>Ç.</span><span>C.a.</span><span>C.</span><span>Ş.</span><span>B.</span></div></div></article>
+            <article class="panel status-panel"><div class="panel-head"><div><h3>Task statusu</h3><p>Bütün taskların bölgüsü</p></div><button class="more">•••</button></div><div class="donut-wrap"><div class="donut"><div><strong>248</strong><span>task</span></div></div></div><div class="legend"><p><i class="dot complete"></i>Tamamlanan <b>75%</b><span>186</span></p><p><i class="dot active-dot"></i>Aktiv <b>25%</b><span>62</span></p></div></article>
+          </section>
+          <section class="panel table-panel"><div class="panel-head"><div><h3>Son tasklar</h3><p>Platformada son əlavə edilən tasklar</p></div><button class="view-all" id="view-all">Hamısına bax →</button></div><div class="table-wrap"><table><thead><tr><th>Task</th><th>İstifadəçi</th><th>Status</th><th>Tarix</th><th></th></tr></thead><tbody id="task-rows"></tbody></table></div></section>
+        </div>
+      </main>
+    </div>
+    <template id="row-template"><tr><td><div class="task-name"><i></i><span></span></div></td><td><div class="user-cell"><b></b><span></span></div></td><td><mark></mark></td><td class="muted"></td><td><button class="row-more">•••</button></td></tr></template>
+    <div class="toast" id="toast"></div>
+    <script src="{{ asset('dashboard/app.js') }}"></script>
+  </body>
+</html>

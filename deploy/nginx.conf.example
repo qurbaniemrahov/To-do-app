@@ -1,0 +1,32 @@
+server {
+    listen 80;
+    listen [::]:80;
+    server_name example.com www.example.com;
+
+    # Bu yolu serverdə layihənin real yolu ilə əvəz edin.
+    root /var/www/flowlist/Back-end/public;
+    index index.php;
+
+    charset utf-8;
+    client_max_body_size 10M;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ ^/index\.php(/|$) {
+        # Serverdə quraşdırılmış PHP-FPM versiyasına uyğunlaşdırın.
+        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+        fastcgi_hide_header X-Powered-By;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+
+    location ~ \.php$ {
+        return 404;
+    }
+}

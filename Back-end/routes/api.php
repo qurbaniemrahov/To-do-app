@@ -16,5 +16,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard']);
         Route::get('/tasks', [AdminController::class, 'tasks']);
         Route::get('/users', [AdminController::class, 'users']);
+        Route::get('/reports/export', [AdminController::class, 'export']);
     });
 });

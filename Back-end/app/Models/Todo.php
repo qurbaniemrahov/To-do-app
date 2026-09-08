@@ -9,8 +9,13 @@ class Todo extends Model
 {
     protected $fillable = ['title', 'completed'];
 
+    protected function casts(): array
+    {
+        return ['completed' => 'boolean'];
+    }
+
     public function user(): BelongsTo
-{
-    return $this->belongsTo(User::class);
-}
+    {
+        return $this->belongsTo(User::class);
+    }
 }

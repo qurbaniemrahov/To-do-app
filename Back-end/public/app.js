@@ -155,7 +155,7 @@ $('#auth-form').addEventListener('submit', async (event) => {
   const password = $('#password').value;
   const name = $('#name').value.trim();
   const message = $('#auth-message');
-  if (!email || password.length < 4 || (mode === 'register' && !name)) {
+  if (!email || password.length < (mode === 'register' ? 8 : 1) || (mode === 'register' && !name)) {
     message.textContent = 'Zəhmət olmasa bütün sahələri düzgün doldurun.';
     return;
   }

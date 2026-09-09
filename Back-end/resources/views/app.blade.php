@@ -43,7 +43,7 @@
                 <input id="email" type="email" placeholder="name@example.com" autocomplete="email" required />
               </label>
               <label class="field">Şifrə
-                <span class="password-wrap"><input id="password" type="password" placeholder="Ən az 4 simvol" autocomplete="current-password" required /><button id="toggle-password" type="button" aria-label="Şifrəni göstər">⌁</button></span>
+                <span class="password-wrap"><input id="password" type="password" placeholder="Qeydiyyat üçün ən az 8 simvol" autocomplete="current-password" required /><button id="toggle-password" type="button" aria-label="Şifrəni göstər">⌁</button></span>
               </label>
               <p class="form-message" id="auth-message" role="alert"></p>
               <button class="primary-button" id="auth-submit" type="submit">Daxil ol <span>→</span></button>

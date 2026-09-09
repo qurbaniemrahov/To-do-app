@@ -1,6 +1,11 @@
 const API_URL = '/api';
 const sessionKey = 'flowlist-session-v1';
-const session = JSON.parse(localStorage.getItem(sessionKey) || 'null');
+let session = null;
+try {
+  session = JSON.parse(localStorage.getItem(sessionKey) || 'null');
+} catch {
+  localStorage.removeItem(sessionKey);
+}
 const $ = (selector) => document.querySelector(selector);
 const dashboard = $('.dashboard');
 const overview = dashboard.innerHTML;
@@ -34,6 +39,11 @@ function formatDate(date) {
 function initials(name) {
   return name.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase();
 }
+function escapeHtml(value) {
+  return String(value).replace(/[&<>'"]/g, (character) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;',
+  })[character]);
+}
 function toast(message) {
   const el = $('#toast');
   el.textContent = message;
@@ -46,7 +56,7 @@ function taskTable(items) {
     items.map((task) => {
       const user = task.user || { name: 'Silinmiş istifadəçi' };
       const status = task.completed ? 'Tamamlandı' : 'Aktiv';
-      return '<tr><td><div class="task-name"><i></i><span>' + task.title + '</span></div></td><td><div class="user-cell"><b>' + initials(user.name) + '</b><span>' + user.name + '</span></div></td><td><mark class="' + (!task.completed ? 'status-active' : '') + '">' + status + '</mark></td><td class="muted">' + formatDate(task.created_at) + '</td></tr>';
+      return '<tr><td><div class="task-name"><i></i><span>' + escapeHtml(task.title) + '</span></div></td><td><div class="user-cell"><b>' + escapeHtml(initials(user.name)) + '</b><span>' + escapeHtml(user.name) + '</span></div></td><td><mark class="' + (!task.completed ? 'status-active' : '') + '">' + status + '</mark></td><td class="muted">' + escapeHtml(formatDate(task.created_at)) + '</td></tr>';
     }).join('') +
     '</tbody></table></div>';
 }
@@ -92,7 +102,7 @@ async function renderTasksPage() {
 }
 async function renderUsersPage() {
   const result = await (await apiRequest('/admin/users?per_page=100')).json();
-  const rows = (result.data || []).map((user) => '<tr><td><div class="user-cell"><b>' + initials(user.name) + '</b><span>' + user.name + '</span></div></td><td>' + user.email + '</td><td>' + user.role + '</td><td>' + user.todos_count + '</td><td>' + user.completed_todos_count + '</td></tr>').join('');
+  const rows = (result.data || []).map((user) => '<tr><td><div class="user-cell"><b>' + escapeHtml(initials(user.name)) + '</b><span>' + escapeHtml(user.name) + '</span></div></td><td>' + escapeHtml(user.email) + '</td><td>' + escapeHtml(user.role) + '</td><td>' + Number(user.todos_count) + '</td><td>' + Number(user.completed_todos_count) + '</td></tr>').join('');
   dashboard.innerHTML = '<section class="welcome"><div><p class="eyebrow">İSTİFADƏÇİLƏR</p><h2>İstifadəçi statistikası</h2><p>Platformada ümumilikdə ' + result.total + ' istifadəçi var.</p></div></section><section class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>İstifadəçi</th><th>E-poçt</th><th>Rol</th><th>Task</th><th>Tamamlanan</th></tr></thead><tbody>' + rows + '</tbody></table></div></section>';
 }
 

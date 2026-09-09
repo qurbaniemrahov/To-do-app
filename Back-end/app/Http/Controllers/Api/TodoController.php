@@ -1,50 +1,48 @@
 <?php
 
-
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Todo;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class TodoController extends Controller
 {
- public function index(Request $request)
-{
-    return $request->user()->todos()->latest()->get();
-}
-
-public function show(Request $request, Todo $todo)
-{
-    if ($todo->user_id !== $request->user()->id) {
-        return response()->json([
-            'message' => 'Bu task sizə aid deyil.',
-        ], 403);
+    public function index(Request $request): Collection
+    {
+        return $request->user()->todos()->latest()->get();
     }
 
-    return $todo;
-}
+    public function show(Request $request, Todo $todo): Todo
+    {
+        if ($todo->user_id !== $request->user()->id) {
+            abort(404);
+        }
 
-public function store(Request $request)
-{
-    $data = $request->validate([
-        'title' => ['required', 'string', 'max:255'],
-        'completed' => ['sometimes', 'boolean'],
-    ]);
+        return $todo;
+    }
 
-    $todo = $request->user()->todos()->create($data);
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'completed' => ['sometimes', 'boolean'],
+        ]);
 
-    return response()->json($todo, 201);
-}
+        $todo = $request->user()->todos()->create($data);
 
-    public function update(Request $request, Todo $todo)
+        return response()->json($todo, 201);
+    }
+
+    public function update(Request $request, Todo $todo): Todo
     {
 
         if ($todo->user_id !== $request->user()->id) {
-        return response()->json([
-            'message' => 'Bu task sizə aid deyil.',
-        ], 403);
-    }
+            abort(404);
+        }
         $data = $request->validate([
             'title' => ['sometimes', 'required', 'string', 'max:255'],
             'completed' => ['sometimes', 'boolean'],
@@ -55,16 +53,14 @@ public function store(Request $request)
         return $todo;
     }
 
-  public function destroy(Request $request, Todo $todo)
-{
-    if ($todo->user_id !== $request->user()->id) {
-        return response()->json([
-            'message' => 'Bu task sizə aid deyil.',
-        ], 403);
+    public function destroy(Request $request, Todo $todo): Response
+    {
+        if ($todo->user_id !== $request->user()->id) {
+            abort(404);
+        }
+
+        $todo->delete();
+
+        return response()->noContent();
     }
-
-    $todo->delete();
-
-    return response()->noContent();
-}
 }
